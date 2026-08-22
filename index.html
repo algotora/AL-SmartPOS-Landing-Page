@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AL SmartPOS — The till that works without the network</title>
+<meta name="description" content="Offline-first point of sale for Zimbabwean shops. Free app with multi-currency sales (USD, ZiG, Rand). Premium unlocks multi-branch, quotations and advanced reporting for $5 once, paid via EcoCash.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16261F;
+    --paper:#F5F1E6;
+    --white:#FFFFFF;
+    --teal:#0F5C4E;
+    --teal-dark:#0B4B3F;
+    --marigold:#E8A33D;
+    --marigold-dark:#CC8A28;
+    --slate:#5B6B63;
+    --line:#E3DDC9;
+    --radius:20px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:-0.02em; line-height:1.1;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 24px;}
+  a{color:inherit; text-decoration:none;}
+  img{max-width:100%; display:block;}
+
+  /* ---------- Nav ---------- */
+  .nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(245,241,230,0.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav .wrap{display:flex; align-items:center; justify-content:space-between; height:68px;}
+  .brand{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; display:flex; align-items:center; gap:8px;}
+  .brand .dot{width:10px; height:10px; border-radius:3px; background:var(--marigold); display:inline-block;}
+  .nav-links{display:flex; gap:28px; font-size:14px; font-weight:500; color:var(--slate);}
+  .nav-links a:hover{color:var(--ink);}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:12px 22px; border-radius:999px; font-weight:600; font-size:14.5px;
+    border:1.5px solid transparent; cursor:pointer; white-space:nowrap;
+  }
+  .btn-primary{background:var(--marigold); color:var(--ink);}
+  .btn-primary:hover{background:var(--marigold-dark);}
+  .btn-outline{border-color:var(--ink); color:var(--ink); background:transparent;}
+  .btn-outline:hover{background:var(--ink); color:var(--white);}
+  @media (max-width:760px){ .nav-links{display:none;} }
+
+  /* ---------- Section shell ---------- */
+  section{padding:88px 0;}
+  section.white{background:var(--white);}
+  .eyebrow{
+    font-size:13px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--teal); margin-bottom:14px;
+  }
+  .section-head{max-width:640px; margin-bottom:48px;}
+  .section-head h2{font-size:clamp(28px,4vw,38px); margin-bottom:14px;}
+  .section-head p{color:var(--slate); font-size:16.5px;}
+  @media (max-width:760px){ section{padding:56px 0;} }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative; overflow:hidden;
+    padding:132px 0 104px;
+    background-size:cover; background-position:center;
+    text-align:center; color:#fff;
+  }
+  .hero::before{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(11,31,26,0.70) 0%, rgba(11,31,26,0.48) 45%, rgba(11,31,26,0.78) 100%);
+  }
+  .hero .wrap{position:relative; z-index:1; max-width:720px;}
+  .hero .eyebrow{color:var(--marigold); }
+  .hero h1{font-size:clamp(34px,5vw,54px); margin-bottom:20px; color:#fff;}
+  .hero p.lead{font-size:18px; color:rgba(255,255,255,0.86); max-width:520px; margin:0 auto 32px;}
+  .hero-ctas{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:22px; justify-content:center;}
+  .hero .btn-outline{border-color:rgba(255,255,255,0.7); color:#fff;}
+  .hero .btn-outline:hover{background:#fff; color:var(--ink);}
+  .trust-line{font-size:13.5px; color:rgba(255,255,255,0.82); display:flex; gap:20px; flex-wrap:wrap; justify-content:center;}
+  .trust-line span{display:flex; align-items:center; gap:7px; font-weight:500;}
+  .trust-line .icon{width:15px; height:15px; color:var(--marigold);}
+  @media (max-width:760px){ .hero{padding:96px 0 72px;} }
+
+  /* ---------- Icons ---------- */
+  .icon{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+
+  /* ---------- Mini gallery ---------- */
+  .mini-gallery{display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-top:18px;}
+  .mini-shot{border:1px solid var(--line); border-radius:14px; background:var(--white); box-shadow:0 8px 20px -12px rgba(22,38,31,0.2); padding:22px 12px; display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center;}
+  .mini-shot .mini-icon{width:44px; height:44px; border-radius:12px; background:#EAF4F1; color:var(--teal-dark); display:flex; align-items:center; justify-content:center;}
+  .mini-shot .mini-icon .icon{width:22px; height:22px;}
+  .mini-shot .cap{font-size:12px; font-weight:600; color:var(--ink); line-height:1.3;}
+  @media (max-width:900px){ .mini-gallery{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:560px){ .mini-gallery{grid-template-columns:repeat(2,1fr);} }
+
+  /* ---------- Misconception strip ---------- */
+  .strip{background:var(--teal); color:var(--white);}
+  .strip .wrap{display:flex; align-items:center; gap:20px; flex-wrap:wrap; padding:26px 24px;}
+  .strip p{font-size:15.5px; max-width:760px;}
+  .strip strong{color:var(--marigold);}
+
+  /* ---------- Industries ---------- */
+  .chips{display:flex; flex-wrap:wrap; gap:10px;}
+  .chip{
+    padding:9px 16px; border-radius:999px; background:var(--white);
+    border:1px solid var(--line); font-size:14px; font-weight:500;
+  }
+  .chip.more{background:transparent; border-style:dashed; color:var(--slate);}
+
+  /* ---------- Showcase rows ---------- */
+  .row{padding:30px 0; border-bottom:1px solid var(--line);}
+  .row:first-of-type{padding-top:0;}
+  .row:last-of-type{border-bottom:none; margin-bottom:0;}
+  .row-text .eyebrow{margin-bottom:10px;}
+  .row-text h3{font-size:24px; margin-bottom:10px;}
+  .row-text p{color:var(--slate); font-size:15.5px; max-width:560px;}
+  .also-inside{
+    margin-top:8px; padding:22px 24px; background:var(--white); border:1px solid var(--line);
+    border-radius:16px; font-size:14.5px; color:var(--slate);
+  }
+  .also-inside strong{color:var(--ink);}
+
+  /* ---------- How it works ---------- */
+  .steps{display:grid; grid-template-columns:repeat(4,1fr); gap:24px;}
+  .step{background:var(--white); border:1px solid var(--line); border-radius:16px; padding:26px 22px;}
+  .step .num{font-family:'IBM Plex Mono',monospace; color:var(--marigold-dark); font-weight:600; font-size:13px; margin-bottom:14px;}
+  .step h4{font-family:'Space Grotesk',sans-serif; font-size:17px; margin-bottom:8px;}
+  .step p{font-size:14px; color:var(--slate);}
+  @media (max-width:900px){ .steps{grid-template-columns:1fr 1fr;} }
+  @media (max-width:560px){ .steps{grid-template-columns:1fr;} }
+
+  /* ---------- Pricing ---------- */
+  .plans{display:grid; grid-template-columns:1fr 1fr; gap:28px;}
+  .plan{
+    background:var(--white); border:1px solid var(--line); border-radius:24px;
+    padding:36px 32px; position:relative;
+  }
+  .plan.premium{border-color:var(--teal); box-shadow:0 24px 48px -24px rgba(15,92,78,0.35);}
+  .plan-badge{
+    position:absolute; top:-13px; right:28px; background:var(--marigold); color:var(--ink);
+    font-size:12px; font-weight:700; padding:5px 14px; border-radius:999px;
+  }
+  .plan h3{font-size:20px; margin-bottom:6px;}
+  .plan .price{font-family:'IBM Plex Mono',monospace; font-size:40px; font-weight:600; margin:14px 0 4px;}
+  .plan .price-note{font-size:13px; color:var(--slate); margin-bottom:22px;}
+  .plan ul{list-style:none; display:flex; flex-direction:column; gap:11px; margin-bottom:26px;}
+  .plan li{font-size:14.5px; padding-left:22px; position:relative;}
+  .plan li::before{content:"✓"; position:absolute; left:0; color:var(--teal); font-weight:700;}
+  .plan .btn{width:100%;}
+  .ecocash-note{
+    margin-top:16px; font-size:13px; color:var(--teal-dark); background:#EAF4F1;
+    border:1px solid #CFE6DF; border-radius:10px; padding:10px 14px; font-weight:500;
+  }
+  @media (max-width:760px){ .plans{grid-template-columns:1fr;} }
+
+  /* ---------- FAQ ---------- */
+  .faq-item{border-bottom:1px solid var(--line); padding:22px 0;}
+  .faq-item h4{font-family:'Space Grotesk',sans-serif; font-size:16.5px; margin-bottom:8px;}
+  .faq-item p{font-size:14.5px; color:var(--slate);}
+
+  /* ---------- Final CTA ---------- */
+  .final{background:var(--ink); color:var(--white); text-align:center; border-radius:28px; margin:0 24px; padding:64px 32px;}
+  .final .wrap{padding:0;}
+  .final h2{color:var(--white); font-size:clamp(26px,4vw,36px); margin-bottom:14px;}
+  .final p{color:#C9D4CD; margin-bottom:30px; font-size:15.5px;}
+  .final .apk-meta{margin-top:16px; font-size:12.5px; color:#8FA096;}
+  .final-ctas{display:flex; gap:14px; justify-content:center; flex-wrap:wrap;}
+
+  footer{padding:40px 24px; text-align:center; font-size:13px; color:var(--slate);}
+
+  [data-reveal]{opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease;}
+  [data-reveal].in{opacity:1; transform:none;}
+  @media (prefers-reduced-motion:reduce){ [data-reveal]{opacity:1; transform:none; transition:none;} }
+</style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="icon-wifi-off" viewBox="0 0 24 24"><line x1="4" y1="4" x2="20" y2="20"/><path d="M1 9a16 16 0 0 1 4.34-2.94M9.5 4.7a16 16 0 0 1 9.9 3.8"/><path d="M5 12.9a10 10 0 0 1 5.3-2.8M19 13a10 10 0 0 0-2.7-2.2"/><path d="M8.5 16.4a5 5 0 0 1 4-1.7"/><line x1="12" y1="20" x2="12.01" y2="20"/></symbol>
+  <symbol id="icon-tag" viewBox="0 0 24 24"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L4 3a1 1 0 0 0-1 1l.24 5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.35-4.35a2 2 0 0 0 0-2.83Z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
+  <symbol id="icon-card-off" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="3" y1="21" x2="21" y2="3"/></symbol>
+  <symbol id="icon-bar-chart" viewBox="0 0 24 24"><rect x="3" y="10" width="4" height="10" rx="1"/><rect x="10" y="4" width="4" height="16" rx="1"/><rect x="17" y="13" width="4" height="7" rx="1"/></symbol>
+  <symbol id="icon-coins" viewBox="0 0 24 24"><circle cx="9" cy="9" r="6"/><circle cx="15" cy="15" r="6"/></symbol>
+  <symbol id="icon-file-text" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="8" y1="9" x2="10" y2="9"/></symbol>
+  <symbol id="icon-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="icon-receipt" viewBox="0 0 24 24"><path d="M4 2h16v20l-2.5-1.5L15 22l-2.5-1.5L10 22l-2.5-1.5L5 22l-1-1V2Z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></symbol>
+  <symbol id="icon-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><line x1="12" y1="13" x2="12" y2="21"/></symbol>
+  <symbol id="icon-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 9 9 9"/><polyline points="12 7 12 12 16 14"/></symbol>
+  <symbol id="icon-trending-up" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></symbol>
+  <symbol id="icon-clipboard-check" viewBox="0 0 24 24"><path d="M9 2h6a1 1 0 0 1 1 1v2H8V3a1 1 0 0 1 1-1Z"/><path d="M5 5h14v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5Z"/><polyline points="9 13 11 15 15 10"/></symbol>
+  <symbol id="icon-truck" viewBox="0 0 24 24"><path d="M1 3h13v13H1z"/><path d="M14 8h4l4 4v4h-8V8Z"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+</svg>
+
+<header class="nav">
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span>AL SmartPOS</div>
+    <nav class="nav-links">
+      <a href="#tour">Product tour</a>
+      <a href="#how">How it works</a>
+      <a href="#plans">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a href="#download" class="btn btn-primary">Download</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero" style="background-image:url('https://images.unsplash.com/photo-1758812820325-3ae9326265b3?auto=format&fit=crop&w=1800&q=80');">
+    <div class="wrap" data-reveal>
+      <div class="eyebrow">Point-of-sale software · Built for Zimbabwe</div>
+      <h1>The point of sale for everyday sale</h1>
+      <p class="lead">AL SmartPOS replaces your till, stock book and ledger with one app — on the phone or laptop you already own. Free to start, with multi-currency sales in USD, ZiG and Rand.</p>
+      <div class="hero-ctas">
+        <a href="#download" class="btn btn-primary">Download for Android</a>
+        <a href="#tour" class="btn btn-outline">See the app</a>
+      </div>
+      <div class="trust-line">
+        <span><svg class="icon"><use href="#icon-wifi-off"/></svg>Works offline</span>
+        <span><svg class="icon"><use href="#icon-tag"/></svg>Free to start</span>
+        <span><svg class="icon"><use href="#icon-card-off"/></svg>No card machine required</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- MISCONCEPTION STRIP -->
+  <div class="strip">
+    <div class="wrap">
+      <p><strong>Not a card‑swipe machine.</strong> Around here "POS" usually means a rented card reader. This is different — it's the till, stock room and ledger, all inside one app that keeps working after the data bundle runs out.</p>
+    </div>
+  </div>
+
+  <!-- INDUSTRIES -->
+  <section class="white">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">Built for the shop floor</div>
+        <h2>If you sell it, ring it up here</h2>
+      </div>
+      <div class="chips" data-reveal>
+        <span class="chip">Tuckshops & spaza shops</span>
+        <span class="chip">General dealers</span>
+        <span class="chip">Grocery & supermarkets</span>
+        <span class="chip">Hardware stores</span>
+        <span class="chip">Bottle stores & bars</span>
+        <span class="chip">Salons & barbershops</span>
+        <span class="chip">Pharmacies</span>
+        <span class="chip">Restaurants & takeaways</span>
+        <span class="chip more">+ 7 more shop types</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHOWCASE -->
+  <section id="tour">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">Inside the app</div>
+        <h2>Everything your shop needs, in one app</h2>
+        <p>A closer look at what each part of AL SmartPOS does for your shop, day to day.</p>
+      </div>
+
+      <div class="row" data-reveal>
+        <div class="row-text">
+          <div class="eyebrow">The office</div>
+          <h3>Know how the shop's doing without opening a ledger</h3>
+          <p>Stock levels, best sellers, expenses and net profit — worked out automatically, per currency, updated with every sale.</p>
+        </div>
+      </div>
+
+      <div class="row" data-reveal>
+        <div class="row-text">
+          <div class="eyebrow">The counter</div>
+          <h3>One toggle, three currencies</h3>
+          <p>Charge in USD, ZiG or Rand — the total converts automatically at the exchange rate you set, on every sale.</p>
+        </div>
+      </div>
+
+      <div class="row" data-reveal>
+        <div class="row-text">
+          <div class="eyebrow">Quotations</div>
+          <h3>Turn a quote into a sale in one tap</h3>
+          <p>No re-entering items — a quote converts straight to a sale, with its own visual style so it's never confused with a receipt.</p>
+        </div>
+      </div>
+
+      <div class="row" data-reveal>
+        <div class="row-text">
+          <div class="eyebrow">Customers</div>
+          <h3>Track what you owe, not just what's short</h3>
+          <p>The coin shortage is a familiar headache. AL SmartPOS keeps a running list of change owed, so nobody's shortchanged and nothing's forgotten.</p>
+        </div>
+      </div>
+
+      <div class="row" data-reveal>
+        <div class="row-text">
+          <div class="eyebrow">The receipt</div>
+          <h3>One sale, two ways to hand it over</h3>
+          <p>Print to a Bluetooth thermal printer for a proper till slip, or share a clean digital copy straight to the customer's WhatsApp — same sale, their choice.</p>
+        </div>
+      </div>
+
+      <div class="also-inside" data-reveal>
+        <strong>Also inside:</strong> sales history search by day or date range · expense tracking with true net profit · product import from Excel or CSV · stock take with instant variance · supplier directory · revenue reports by currency and payment method — including EcoCash.
+      </div>
+      <div class="mini-gallery" data-reveal>
+        <div class="mini-shot">
+          <div class="mini-icon"><svg class="icon"><use href="#icon-box"/></svg></div>
+          <div class="cap">Product Management</div>
+        </div>
+        <div class="mini-shot">
+          <div class="mini-icon"><svg class="icon"><use href="#icon-history"/></svg></div>
+          <div class="cap">Sales History</div>
+        </div>
+        <div class="mini-shot">
+          <div class="mini-icon"><svg class="icon"><use href="#icon-bar-chart"/></svg></div>
+          <div class="cap">Reports</div>
+        </div>
+        <div class="mini-shot">
+          <div class="mini-icon"><svg class="icon"><use href="#icon-trending-up"/></svg></div>
+          <div class="cap">Expenses & Profit</div>
+        </div>
+        <div class="mini-shot">
+          <div class="mini-icon"><svg class="icon"><use href="#icon-clipboard-check"/></svg></div>
+          <div class="cap">Stock Take</div>
+        </div>
+        <div class="mini-shot">
+          <div class="mini-icon"><svg class="icon"><use href="#icon-truck"/></svg></div>
+          <div class="cap">Suppliers</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="white">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">How it works</div>
+        <h2>From install to first sale in four steps</h2>
+        <p>No setup call, no training session. Most shop owners are processing their own sales within the hour.</p>
+      </div>
+      <div class="steps" data-reveal>
+        <div class="step">
+          <div class="num">01</div>
+          <h4>Install once</h4>
+          <p>On the phone, tablet or laptop that lives at the till. No data plan required after that.</p>
+        </div>
+        <div class="step">
+          <div class="num">02</div>
+          <h4>Make the sale</h4>
+          <p>Add items, charge in USD, ZiG or Rand — it converts automatically.</p>
+        </div>
+        <div class="step">
+          <div class="num">03</div>
+          <h4>Hand over the receipt</h4>
+          <p>Print it, or send a copy straight to WhatsApp.</p>
+        </div>
+        <div class="step">
+          <div class="num">04</div>
+          <h4>Watch it run itself</h4>
+          <p>A dashboard flags what's expiring, what's slow, and who sold what.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="plans">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">Plans</div>
+        <h2>Start free. Unlock scale once.</h2>
+        <p>The free plan runs a full single shop, no time limit. Premium is a single once-off unlock for shops that are scaling up.</p>
+      </div>
+      <div class="plans" data-reveal>
+        <div class="plan">
+          <h3>Free</h3>
+          <div class="price">$0</div>
+          <div class="price-note">Install and go · no time limit</div>
+          <ul>
+            <li>One shop, one cashier account (plus Admin)</li>
+            <li>Multi-currency till — USD, ZiG and Rand</li>
+            <li>Product catalog, sales & expense tracking</li>
+            <li>Core reports & WhatsApp product catalog</li>
+            <li>Local backup & restore, fully offline</li>
+          </ul>
+          <a href="#download" class="btn btn-outline">Download free</a>
+        </div>
+        <div class="plan premium">
+          <div class="plan-badge">One-time</div>
+          <h3>Premium</h3>
+          <div class="price">$5</div>
+          <div class="price-note">Pay once, use forever — no subscription</div>
+          <ul>
+            <li>Everything in Free, plus:</li>
+            <li>Unlimited shops & cashier accounts</li>
+            <li>Quotations, suppliers & stock take</li>
+            <li>Advanced reports, expiry & reorder alerts</li>
+            <li>Credit sales & change-owed tracking</li>
+            <li>Telegram alerts for sales & shift closes</li>
+          </ul>
+          <a href="https://wa.me/263772420512" class="btn btn-primary">Unlock Premium</a>
+          <div class="ecocash-note">Paid via EcoCash — WhatsApp 0772 420 512 to unlock, no card or bank account needed.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="white">
+    <div class="wrap" style="max-width:760px;">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">Before you install</div>
+        <h2>Straight answers, no fine print</h2>
+      </div>
+      <div data-reveal>
+        <div class="faq-item">
+          <h4>Why isn't this on the Play Store?</h4>
+          <p>Play Store listings take fees and review time that small local tools skip by distributing directly. Android will ask you to confirm the install once — that's normal, not a warning about this app.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Where does my sales data go?</h4>
+          <p>Nowhere but your device. AL SmartPOS is offline-first — stock, sales and customer records stay on your phone or laptop, not on a server.</p>
+        </div>
+        <div class="faq-item">
+          <h4>What if I lose my phone?</h4>
+          <p>Backup & restore is included free. Download a backup any time from Settings, or set an auto-backup, and restore it onto a new device.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Who do I talk to if something goes wrong?</h4>
+          <p>A real person on WhatsApp — <a href="https://wa.me/263772420512" style="color:var(--teal); font-weight:600;">0772 420 512</a>. Built and supported by Al Leath Gotora in Zimbabwe.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section id="download">
+    <div class="wrap">
+      <div class="final" data-reveal>
+        <h2>On your phone in under two minutes</h2>
+        <p>Tap download → open the file → allow the install → log in with the default Admin username <span class="mono">admin</span> and PIN <span class="mono">1234</span>, or default Cashier PIN <span class="mono">1111</span>. Change these any time in Settings.</p>
+        <div class="final-ctas">
+          <a href="AL_SmartPOS.apk" class="btn btn-primary">Download for Android</a>
+          <a href="https://wa.me/263772420512" class="btn btn-outline" style="border-color:#fff; color:#fff;">Message us on WhatsApp</a>
+        </div>
+        <div class="apk-meta">AL_SmartPOS.apk · 5.5MB · free to use</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>© 2026 Al Leath Gotora. Built in Zimbabwe. Offline-first · Free to start · No card machine required.</footer>
+
+<script>
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.12});
+  document.querySelectorAll('[data-reveal]').forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>
